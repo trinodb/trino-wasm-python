@@ -927,9 +927,11 @@ u8* execute(const u8* data)
     DEBUG("execute()");
     PyObject* args = buildArgs(data);
 
+#ifndef NDEBUG
     PyObject* str = PyObject_Str(args);
     DEBUG("invoke(%s)", PyUnicode_AsUTF8(str));
     Py_DECREF(str);
+#endif
 
     PyObject* value = PyObject_CallObject(guestFunction, args);
     if (value == NULL) {
