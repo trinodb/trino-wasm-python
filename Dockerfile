@@ -101,6 +101,7 @@ RUN <<EOF
 cd ${PYTHON_PATH}/lib/python3.13
 find . -name __pycache__ -exec rm -rf {} \;
 rm -rf config-3.13-wasm32-wasi
-rm -rf _*_support* _pyrepl bdb ensurepip doctest* idlelib pdb pydoc*
-rm -rf sqlite3 ssl* subprocess* tkinter turtle* venv webbrowser*
+rm -rf _*_support* _pyrepl bdb concurrent curses ensurepip doctest* idlelib
+rm -rf multiprocessing pdb pydoc* socketserver* sqlite3 ssl* subprocess*
+rm -rf tkinter turtle* unittest venv webbrowser* wsgiref xmlrpc
 EOF
