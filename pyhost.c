@@ -100,6 +100,14 @@ static i64 readI64(const u8** const data)
     return value;
 }
 
+static PyObject* readString(const u8** const data)
+{
+    const i32 size = readI32(data);
+    PyObject* value = checked(PyUnicode_FromStringAndSize((const char*)*data, size));
+    *data += size;
+    return value;
+}
+
 // skip type at the current position in the type descriptor
 static void skipType(const u8** const type)
 {
@@ -234,19 +242,14 @@ static PyObject* doBuildArgs(const u8** const type, const u8** const data)
             return checked(PyFloat_FromDouble(value));
         }
         case DECIMAL: {
-            const i32 size = readI32(data);
-            PyObject* number = checked(PyUnicode_FromStringAndSize((const char*)*data, size));
-            *data += size;
+            PyObject* number = readString(data);
             PyObject* value = checked(PyObject_CallOneArg(decimalClass, number));
             Py_DECREF(number);
             return value;
         }
         case VARCHAR:
         case JSON: {
-            const i32 size = readI32(data);
-            PyObject* value = checked(PyUnicode_FromStringAndSize((const char*)*data, size));
-            *data += size;
-            return value;
+            return readString(data);
         }
         case VARBINARY: {
             const i32 size = readI32(data);
@@ -424,24 +427,36 @@ static void bufferAppend(Buffer* buffer, const u8* data, const i32 size)
     buffer->used += size;
 }
 
-static void bufferAppendI8(Buffer *buffer, const i8 value)
+static void bufferAppendI8(Buffer* buffer, const i8 value)
 {
     bufferAppend(buffer, (u8*)&value, sizeof(i8));
 }
 
-static void bufferAppendI16(Buffer *buffer, const i16 value)
+static void bufferAppendI16(Buffer* buffer, const i16 value)
 {
     bufferAppend(buffer, (u8*)&value, sizeof(i16));
 }
 
-static void bufferAppendI32(Buffer *buffer, const i32 value)
+static void bufferAppendI32(Buffer* buffer, const i32 value)
 {
     bufferAppend(buffer, (u8*)&value, sizeof(i32));
 }
 
-static void bufferAppendI64(Buffer *buffer, const i64 value)
+static void bufferAppendI64(Buffer* buffer, const i64 value)
 {
     bufferAppend(buffer, (u8*)&value, sizeof(i64));
+}
+
+static bool bufferAppendString(Buffer* buffer, PyObject* object)
+{
+    Py_ssize_t size;
+    const char* value = PyUnicode_AsUTF8AndSize(object, &size);
+    if (value == NULL) {
+        return false;
+    }
+    bufferAppendI32(buffer, size);
+    bufferAppend(buffer, (u8*)value, size);
+    return true;
 }
 
 static void overflowError(const char* message)
@@ -634,15 +649,11 @@ static bool buildResult(const u8** const type, PyObject* input, Buffer* buffer)
                 resultError(input, "DECIMAL");
                 return false;
             }
-            Py_ssize_t size;
-            const char* value = PyUnicode_AsUTF8AndSize(string, &size);
-            if (value == NULL) {
+            if (!bufferAppendString(buffer, string)) {
                 Py_DECREF(string);
                 resultError(input, "DECIMAL");
                 return false;
             }
-            bufferAppendI32(buffer, size);
-            bufferAppend(buffer, (u8*)value, size);
             Py_DECREF(string);
             return true;
         }
@@ -653,14 +664,10 @@ static bool buildResult(const u8** const type, PyObject* input, Buffer* buffer)
                 resultError(input, typeName);
                 return false;
             }
-            Py_ssize_t size;
-            const char* value = PyUnicode_AsUTF8AndSize(input, &size);
-            if (value == NULL) {
+            if (!bufferAppendString(buffer, input)) {
                 resultError(input, typeName);
                 return false;
             }
-            bufferAppendI32(buffer, size);
-            bufferAppend(buffer, (u8*)value, size);
             return true;
         }
         case VARBINARY: {
