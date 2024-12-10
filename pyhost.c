@@ -20,18 +20,10 @@ const static i64 MICROSECONDS = 1000 * 1000;
 
 static PyObject* emptyTuple;
 
-static PyObject* decimalModule;
 static PyObject* decimalClass;
-
-static PyObject* uuidModule;
 static PyObject* uuidClass;
-
-static PyObject* ipaddressModule;
 static PyObject* ipaddressV4Class;
 static PyObject* ipaddressV6Class;
-
-static PyObject* trinoModule;
-static PyObject* guestModule;
 
 static PyObject* trinoErrorResultFunction;
 static PyObject* decimalToStringFunction;
@@ -913,8 +905,7 @@ void setup(const u8* functionName, const u8* argType, const u8* returnType)
     PyList_Append(path, entry);
     Py_DECREF(entry);
 
-    guestModule = loadModule("guest");
-    guestFunction = findFunction(guestModule, name);
+    guestFunction = findFunction(loadModule("guest"), name);
 
     trinoArgType = argType;
     trinoReturnType = returnType;
@@ -1003,17 +994,14 @@ int main(const int argc, char* argv[])
 
     emptyTuple = PyTuple_New(0);
 
-    decimalModule = loadModule("decimal");
-    decimalClass = findFunction(decimalModule, "Decimal");
+    decimalClass = findFunction(loadModule("decimal"), "Decimal");
+    uuidClass = findFunction(loadModule("uuid"), "UUID");
 
-    uuidModule = loadModule("uuid");
-    uuidClass = findFunction(uuidModule, "UUID");
-
-    ipaddressModule = loadModule("ipaddress");
+    PyObject* ipaddressModule = loadModule("ipaddress");
     ipaddressV4Class = findFunction(ipaddressModule, "IPv4Address");
     ipaddressV6Class = findFunction(ipaddressModule, "IPv6Address");
 
-    trinoModule = loadModule("trino");
+    PyObject* trinoModule = loadModule("trino");
     trinoErrorResultFunction = findFunction(trinoModule, "_trino_error_result");
     decimalToStringFunction = findFunction(trinoModule, "_decimal_to_string");
 
