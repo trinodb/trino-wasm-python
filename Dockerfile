@@ -2,7 +2,7 @@ FROM ubuntu
 
 RUN <<EOF
 apt-get update
-apt-get install -y curl build-essential python3 git cmake pkg-config busybox
+apt-get install -y curl build-essential python3-pip git cmake pkg-config busybox
 EOF
 
 ARG TARGETARCH
@@ -15,6 +15,8 @@ ENV WASMTIME_VERSION=26.0.0
 ENV WIZER_VERSION=7.0.5
 ENV WASI_VFS_VERSION=0.5.4
 ENV PYTHON_PATH=/opt/wasi-python
+ENV PYTHON_PYLIB=${PYTHON_PATH}/lib/python3.13
+ENV PYTHON_SITE=${PYTHON_PYLIB}/site-packages
 
 RUN <<EOF
 mkdir ${WASI_SDK_PATH}
@@ -98,9 +100,21 @@ AR
 EOF
 
 RUN <<EOF
-cd ${PYTHON_PATH}/lib/python3.13
+cd ${PYTHON_PYLIB}
 find . -name __pycache__ -exec rm -rf {} \;
 rm -rf config-3.13-wasm32-wasi
 rm -rf _*_support* _pyrepl bdb ensurepip doctest* idlelib pdb pydoc*
 rm -rf sqlite3 ssl* subprocess* tkinter turtle* venv webbrowser*
+EOF
+
+RUN pip3 install --target ${PYTHON_SITE} \
+    --no-compile --platform wasi-wasm32 --only-binary :all: \
+    attrs bleach charset-normalizer defusedxml idna jmespath jsonschema \
+    pyasn1 pyparsing python-dateutil rsa tomli ua-parser
+
+RUN <<EOF
+cd ${PYTHON_SITE}
+find . -name '*.dist-info' -exec rm -rf {} \;
+rm -rf bin
+/build/cpython/cross-build/build/python -m compileall -b .
 EOF
