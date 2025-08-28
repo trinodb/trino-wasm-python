@@ -6,7 +6,7 @@ set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
 
 add_compile_options(-Werror -Wall -Wextra -Wimplicit-fallthrough)
 
-add_link_options(-Wl,--max-memory=33554432)
+add_link_options(-Wl,--max-memory=67108864)
 
 add_executable(python-host pyhost.c)
 
