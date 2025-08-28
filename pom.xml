@@ -10,7 +10,7 @@
 
     <groupId>io.trino</groupId>
     <artifactId>trino-wasm-python</artifactId>
-    <version>3.13-4-SNAPSHOT</version>
+    <version>3.13-4</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
@@ -30,7 +30,7 @@
     <scm>
         <connection>scm:git:git://github.com/trinodb/trino-wasm-python.git</connection>
         <developerConnection>scm:git:git@github.com:trinodb/trino-wasm-python.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>3.13-4</tag>
         <url>https://github.com/trinodb/trino-wasm-python</url>
     </scm>
 
