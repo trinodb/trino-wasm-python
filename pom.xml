@@ -43,7 +43,7 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.chicory.version>1.0.0</dep.chicory.version>
+        <dep.chicory.version>1.5.1</dep.chicory.version>
     </properties>
 
     <dependencyManagement>
@@ -51,7 +51,7 @@
             <dependency>
                 <groupId>com.dylibso.chicory</groupId>
                 <artifactId>bom</artifactId>
-                <version>1.0.0-M2</version>
+                <version>1.5.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -107,13 +107,13 @@
 
             <plugin>
                 <groupId>com.dylibso.chicory</groupId>
-                <artifactId>aot-maven-plugin-experimental</artifactId>
+                <artifactId>chicory-compiler-maven-plugin</artifactId>
                 <version>${dep.chicory.version}</version>
                 <executions>
                     <execution>
-                        <id>aot-python</id>
+                        <id>compiler-gen</id>
                         <goals>
-                            <goal>wasm-aot-gen</goal>
+                            <goal>compile</goal>
                         </goals>
                         <configuration>
                             <name>io.trino.wasm.python.Python</name>
