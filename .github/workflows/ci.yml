@@ -12,5 +12,5 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: ./build-image.sh
-      - run: mvn dependency:go-offline -B -V
-      - run: mvn install -B
+      - run: ./mvnw dependency:go-offline -B -V
+      - run: ./mvnw install -B
