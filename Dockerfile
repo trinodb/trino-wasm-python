@@ -7,13 +7,13 @@ EOF
 
 ARG TARGETARCH
 
-ENV WASI_SDK_VERSION=24
+ENV WASI_SDK_VERSION=30
 ENV WASI_SDK_PATH=/opt/wasi-sdk
 ENV WASI_SDK_SYSROOT=${WASI_SDK_PATH}/share/wasi-sysroot
 ENV WASI_SDK_LIBDIR=${WASI_SDK_SYSROOT}/lib/wasm32-wasi
-ENV WASMTIME_VERSION=26.0.0
-ENV WIZER_VERSION=7.0.5
-ENV WASI_VFS_VERSION=0.5.4
+ENV WASMTIME_VERSION=42.0.1
+ENV WIZER_VERSION=10.0.0
+ENV WASI_VFS_VERSION=0.6.2
 ENV PYTHON_PATH=/opt/wasi-python
 ENV PYTHON_PYLIB=${PYTHON_PATH}/lib/python3.13
 ENV PYTHON_SITE=${PYTHON_PYLIB}/site-packages
@@ -50,7 +50,7 @@ EOF
 
 RUN <<EOF
 mkdir -p /build/zlib
-curl -L https://www.zlib.net/zlib-1.3.1.tar.gz | \
+curl -L https://www.zlib.net/zlib-1.3.2.tar.gz | \
   tar -xz --strip-components 1 -C /build/zlib
 EOF
 
