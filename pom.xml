@@ -43,7 +43,7 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.chicory.version>1.5.1</dep.chicory.version>
+        <dep.chicory.version>1.7.2</dep.chicory.version>
     </properties>
 
     <dependencyManagement>
@@ -51,7 +51,7 @@
             <dependency>
                 <groupId>com.dylibso.chicory</groupId>
                 <artifactId>bom</artifactId>
-                <version>1.5.1</version>
+                <version>${dep.chicory.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
