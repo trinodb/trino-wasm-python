@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
       - run: ./build-image.sh
       - run: ./mvnw dependency:go-offline -B -V
       - run: ./mvnw install -B
