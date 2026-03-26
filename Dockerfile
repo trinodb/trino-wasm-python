@@ -15,7 +15,7 @@ ENV WASMTIME_VERSION=42.0.1
 ENV WIZER_VERSION=10.0.0
 ENV WASI_VFS_VERSION=0.6.2
 ENV PYTHON_PATH=/opt/wasi-python
-ENV PYTHON_PYLIB=${PYTHON_PATH}/lib/python3.13
+ENV PYTHON_PYLIB=${PYTHON_PATH}/lib/python3.14
 ENV PYTHON_SITE=${PYTHON_PYLIB}/site-packages
 
 RUN <<EOF
@@ -67,32 +67,45 @@ EOF
 
 RUN <<EOF
 mkdir -p /build/cpython
-curl -L https://www.python.org/ftp/python/3.13.0/Python-3.13.0.tgz | \
+curl -L https://www.python.org/ftp/python/3.14.3/Python-3.14.3.tgz | \
     tar -xz --strip-components 1 -C /build/cpython
 EOF
 
-RUN <<EOF
+RUN <<'EOF'
 cd /build/cpython
-python3 Tools/wasm/wasi.py configure-build-python
-python3 Tools/wasm/wasi.py make-build-python
+sed -i '/!_Py__has_attribute(preserve_none)/,/#   endif/{
+  s/#       if !_Py__has_attribute(preserve_none) || !_Py__has_attribute(musttail)/#       if !_Py__has_attribute(musttail)/
+}' Python/ceval_macros.h
+sed -i 's/#   define Py_PRESERVE_NONE_CC __attribute__((preserve_none))/#   if _Py__has_attribute(preserve_none)\n#       define Py_PRESERVE_NONE_CC __attribute__((preserve_none))\n#   else\n#       define Py_PRESERVE_NONE_CC\n#   endif/' Python/ceval_macros.h
 EOF
 
 RUN <<EOF
 cd /build/cpython
-python3 Tools/wasm/wasi.py configure-host -- \
-    CFLAGS='-Os' --prefix=${PYTHON_PATH} --disable-test-modules
-python3 Tools/wasm/wasi.py make-host
-make -C cross-build/wasm32-wasi install COMPILEALL_OPTS='-j0 -b'
+python3 Tools/wasm/wasi configure-build-python
+python3 Tools/wasm/wasi make-build-python
 EOF
 
 RUN <<EOF
-cd /build/cpython/cross-build/wasm32-wasi
+cd /build/cpython
+python3 Tools/wasm/wasi configure-host -- \
+    CFLAGS='-Os -mtail-call' --prefix=${PYTHON_PATH} --disable-test-modules --with-tail-call-interp
+python3 Tools/wasm/wasi make-host
+make -C cross-build/wasm32-wasip1 install COMPILEALL_OPTS='-j0 -b'
+EOF
+
+RUN <<EOF
+cd /build/cpython/cross-build/wasm32-wasip1
 ${WASI_SDK_PATH}/bin/ar -M <<AR
-create ${PYTHON_PATH}/lib/libpython3.13.a
-addlib libpython3.13.a
+create ${PYTHON_PATH}/lib/libpython3.14.a
+addlib libpython3.14.a
 addlib Modules/expat/libexpat.a
 addlib Modules/_decimal/libmpdec/libmpdec.a
+addlib Modules/_hacl/libHacl_Hash_BLAKE2.a
+addlib Modules/_hacl/libHacl_Hash_MD5.a
+addlib Modules/_hacl/libHacl_Hash_SHA1.a
 addlib Modules/_hacl/libHacl_Hash_SHA2.a
+addlib Modules/_hacl/libHacl_Hash_SHA3.a
+addlib Modules/_hacl/libHacl_HMAC.a
 addlib ${WASI_SDK_LIBDIR}/libz.a
 save
 end
@@ -102,7 +115,7 @@ EOF
 RUN <<EOF
 cd ${PYTHON_PYLIB}
 find . -name __pycache__ -exec rm -rf {} \;
-rm -rf config-3.13-wasm32-wasi
+rm -rf config-3.14-wasm32-wasi
 rm -rf _*_support* _pyrepl bdb concurrent curses ensurepip doctest* idlelib
 rm -rf multiprocessing pdb pydoc* socketserver* sqlite3 ssl* subprocess*
 rm -rf tkinter turtle* unittest venv webbrowser* wsgiref xmlrpc
@@ -117,5 +130,5 @@ RUN <<EOF
 cd ${PYTHON_SITE}
 find . -name '*.dist-info' -exec rm -rf {} \;
 rm -rf bin
-/build/cpython/cross-build/build/python -m compileall -b .
+$(find /build/cpython/cross-build -maxdepth 2 -name python -not -path '*/wasm32-*' -type f) -m compileall -b .
 EOF
