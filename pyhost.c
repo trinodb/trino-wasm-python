@@ -149,6 +149,7 @@ static void skipType(const u8** const type)
         case JSON:
         case UUID:
         case IPADDRESS:
+        case NUMBER:
             break;
         default:
             FATAL("Unsupported Trino type %d", trinoType);
@@ -241,7 +242,8 @@ static PyObject* doBuildArgs(const u8** const type, const u8** const data)
             *data += sizeof(f32);
             return checked(PyFloat_FromDouble(value));
         }
-        case DECIMAL: {
+        case DECIMAL:
+        case NUMBER: {
             PyObject* number = readString(data);
             PyObject* value = checked(PyObject_CallOneArg(decimalClass, number));
             Py_DECREF(number);
@@ -643,15 +645,17 @@ static bool buildResult(const u8** const type, PyObject* input, Buffer* buffer)
             bufferAppend(buffer, (u8*)&value, sizeof(f32));
             return true;
         }
-        case DECIMAL: {
+        case DECIMAL:
+        case NUMBER: {
+            const char* typeName = trinoType == DECIMAL ? "DECIMAL" : "NUMBER";
             PyObject* string = PyObject_CallOneArg(decimalToStringFunction, input);
             if (string == NULL) {
-                resultError(input, "DECIMAL");
+                resultError(input, typeName);
                 return false;
             }
             if (!bufferAppendString(buffer, string)) {
                 Py_DECREF(string);
-                resultError(input, "DECIMAL");
+                resultError(input, typeName);
                 return false;
             }
             Py_DECREF(string);
