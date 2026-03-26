@@ -6,10 +6,10 @@ set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
 
 add_compile_options(-Werror -Wall -Wextra -Wimplicit-fallthrough)
 
-add_link_options(-Wl,--max-memory=67108864)
+add_link_options(-Wl,--max-memory=67108864 -z stack-size=16777216 -Wl,--stack-first -Wl,--initial-memory=41943040)
 
 add_executable(python-host pyhost.c)
 
 find_package(Python COMPONENTS Development)
 
-target_link_libraries(python-host PUBLIC Python::Python wasi_vfs)
+target_link_libraries(python-host PUBLIC Python::Python wasi_vfs wasi-emulated-signal wasi-emulated-getpid wasi-emulated-process-clocks)
