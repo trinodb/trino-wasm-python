@@ -43,7 +43,7 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.chicory.version>1.7.2</dep.chicory.version>
+        <dep.chicory.version>1.7.5</dep.chicory.version>
     </properties>
 
     <dependencyManagement>
