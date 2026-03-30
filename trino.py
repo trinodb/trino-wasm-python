@@ -47,3 +47,12 @@ def _decimal_to_string(value: Decimal):
     if not value.is_finite():
         raise ValueError('Decimal is not finite: ' + str(value))
     return "{:f}".format(value)
+
+def _number_to_string(value: Decimal):
+    if not isinstance(value, Decimal):
+        raise ValueError('Not a Decimal: ' + type(value).__name__)
+    if value.is_nan():
+        return "NaN"
+    if value.is_infinite():
+        return "-Infinity" if value.is_signed() else "+Infinity"
+    return "{:f}".format(value)
