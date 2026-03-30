@@ -44,6 +44,10 @@ def _trino_error_result(e: BaseException):
 def _decimal_to_string(value: Decimal):
     if not isinstance(value, Decimal):
         raise ValueError('Not a Decimal: ' + type(value).__name__)
-    if not value.is_finite():
-        raise ValueError('Decimal is not finite: ' + str(value))
+    if value.is_nan():
+        return "NaN"
+    if value.is_infinite():
+        if value.is_signed():
+            return "-Infinity"
+        return "Infinity"
     return "{:f}".format(value)
