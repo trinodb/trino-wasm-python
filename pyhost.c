@@ -27,6 +27,7 @@ static PyObject* ipaddressV6Class;
 
 static PyObject* trinoErrorResultFunction;
 static PyObject* decimalToStringFunction;
+static PyObject* numberToStringFunction;
 static PyObject* guestFunction;
 
 static const u8* trinoArgType;
@@ -137,6 +138,7 @@ static void skipType(const u8** const type)
         case DOUBLE:
         case REAL:
         case DECIMAL:
+        case NUMBER:
         case VARCHAR:
         case VARBINARY:
         case DATE:
@@ -241,7 +243,8 @@ static PyObject* doBuildArgs(const u8** const type, const u8** const data)
             *data += sizeof(f32);
             return checked(PyFloat_FromDouble(value));
         }
-        case DECIMAL: {
+        case DECIMAL:
+        case NUMBER: {
             PyObject* number = readString(data);
             PyObject* value = checked(PyObject_CallOneArg(decimalClass, number));
             Py_DECREF(number);
@@ -657,6 +660,20 @@ static bool buildResult(const u8** const type, PyObject* input, Buffer* buffer)
             Py_DECREF(string);
             return true;
         }
+        case NUMBER: {
+            PyObject* string = PyObject_CallOneArg(numberToStringFunction, input);
+            if (string == NULL) {
+                resultError(input, "NUMBER");
+                return false;
+            }
+            if (!bufferAppendString(buffer, string)) {
+                Py_DECREF(string);
+                resultError(input, "NUMBER");
+                return false;
+            }
+            Py_DECREF(string);
+            return true;
+        }
         case VARCHAR:
         case JSON: {
             const char* typeName = trinoType == VARCHAR ? "VARCHAR" : "JSON";
@@ -1011,6 +1028,7 @@ int main(const int argc, char* argv[])
     PyObject* trinoModule = loadModule("trino");
     trinoErrorResultFunction = findFunction(trinoModule, "_trino_error_result");
     decimalToStringFunction = findFunction(trinoModule, "_decimal_to_string");
+    numberToStringFunction = findFunction(trinoModule, "_number_to_string");
 
     DEBUG("Python host initialized");
     return 0;
