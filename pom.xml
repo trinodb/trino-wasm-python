@@ -43,7 +43,8 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.chicory.version>1.7.2</dep.chicory.version>
+        <dep.redline.version>0.0.3</dep.redline.version>
+        <dep.chicory.version>1.7.5</dep.chicory.version>
     </properties>
 
     <dependencyManagement>
@@ -67,6 +68,18 @@
         <dependency>
             <groupId>com.dylibso.chicory</groupId>
             <artifactId>wasm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.roastedroot</groupId>
+            <artifactId>redline</artifactId>
+            <version>${dep.redline.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.roastedroot</groupId>
+            <artifactId>redline-api</artifactId>
+            <version>${dep.redline.version}</version>
         </dependency>
     </dependencies>
 
@@ -106,9 +119,9 @@
             </plugin>
 
             <plugin>
-                <groupId>com.dylibso.chicory</groupId>
-                <artifactId>chicory-compiler-maven-plugin</artifactId>
-                <version>${dep.chicory.version}</version>
+                <groupId>io.roastedroot</groupId>
+                <artifactId>redline-compiler-maven-plugin</artifactId>
+                <version>${dep.redline.version}</version>
                 <executions>
                     <execution>
                         <id>compiler-gen</id>
