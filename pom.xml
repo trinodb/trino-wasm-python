@@ -43,15 +43,15 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.chicory.version>1.7.2</dep.chicory.version>
+        <dep.endive.version>0.0.1</dep.endive.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.dylibso.chicory</groupId>
+                <groupId>run.endive</groupId>
                 <artifactId>bom</artifactId>
-                <version>${dep.chicory.version}</version>
+                <version>${dep.endive.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -60,12 +60,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.dylibso.chicory</groupId>
+            <groupId>run.endive</groupId>
             <artifactId>runtime</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.dylibso.chicory</groupId>
+            <groupId>run.endive</groupId>
             <artifactId>wasm</artifactId>
         </dependency>
     </dependencies>
@@ -106,9 +106,9 @@
             </plugin>
 
             <plugin>
-                <groupId>com.dylibso.chicory</groupId>
-                <artifactId>chicory-compiler-maven-plugin</artifactId>
-                <version>${dep.chicory.version}</version>
+                <groupId>run.endive</groupId>
+                <artifactId>endive-compiler-maven-plugin</artifactId>
+                <version>${dep.endive.version}</version>
                 <executions>
                     <execution>
                         <id>compiler-gen</id>
