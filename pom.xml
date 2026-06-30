@@ -43,7 +43,7 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.endive.version>0.0.1</dep.endive.version>
+        <dep.endive.version>1.0.0</dep.endive.version>
     </properties>
 
     <dependencyManagement>
