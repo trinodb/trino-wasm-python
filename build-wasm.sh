@@ -34,6 +34,7 @@ mkdir ${TARGET_DIR}/empty
 env - TERM=dumb PYTHONDONTWRITEBYTECODE=1 ${WIZER} \
     --wasm-bulk-memory true \
     --allow-wasi \
+    --wasm-multi-memory true \
     --inherit-stdio true \
     --inherit-env true \
     --init-func _start \
