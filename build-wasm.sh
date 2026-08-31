@@ -32,12 +32,12 @@ rm -rf "${TARGET_DIR}"/empty
 mkdir ${TARGET_DIR}/empty
 
 env - TERM=dumb PYTHONDONTWRITEBYTECODE=1 ${WIZER} \
-    --wasm-bulk-memory true \
+    --wasm-bulk-memory=true \
     --allow-wasi \
-    --inherit-stdio true \
-    --inherit-env true \
+    --inherit-stdio=true \
+    --inherit-env=true \
     --init-func _start \
-    --keep-init-func false \
+    --keep-init-func=false \
     --mapdir /guest::${TARGET_DIR}/empty \
     -o ${TARGET_DIR}/python-host-opt.wasm \
     ${TARGET_DIR}/python-host-packed.wasm
