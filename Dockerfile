@@ -67,7 +67,7 @@ EOF
 
 RUN <<EOF
 mkdir -p /build/cpython
-curl -L https://www.python.org/ftp/python/3.13.0/Python-3.13.0.tgz | \
+curl -L https://www.python.org/ftp/python/3.13.2/Python-3.13.2.tgz | \
     tar -xz --strip-components 1 -C /build/cpython
 EOF
 
@@ -82,11 +82,11 @@ cd /build/cpython
 python3 Tools/wasm/wasi.py configure-host -- \
     CFLAGS='-Os' --prefix=${PYTHON_PATH} --disable-test-modules
 python3 Tools/wasm/wasi.py make-host
-make -C cross-build/wasm32-wasi install COMPILEALL_OPTS='-j0 -b'
+make -C cross-build/wasm32-wasip1 install COMPILEALL_OPTS='-j0 -b'
 EOF
 
 RUN <<EOF
-cd /build/cpython/cross-build/wasm32-wasi
+cd /build/cpython/cross-build/wasm32-wasip1
 ${WASI_SDK_PATH}/bin/ar -M <<AR
 create ${PYTHON_PATH}/lib/libpython3.13.a
 addlib libpython3.13.a
