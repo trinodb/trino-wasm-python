@@ -13,7 +13,7 @@ TARGET_DIR=target/wasm
 export CMAKE_EXTRA_ARGS="
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     -DWASI_SDK_PREFIX=${WASI_SDK_PATH}
-    -DCMAKE_TOOLCHAIN_FILE=${WASI_SDK_PATH}/share/cmake/wasi-sdk.cmake
+    -DCMAKE_TOOLCHAIN_FILE=${WASI_SDK_PATH}/share/cmake/wasi-sdk-p1.cmake
     -DCMAKE_PREFIX_PATH=/opt/wasi-python"
 
 cmake -B ${TARGET_DIR} ${CMAKE_EXTRA_ARGS} .
