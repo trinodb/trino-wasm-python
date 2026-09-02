@@ -4,9 +4,9 @@ project(python-host)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
 
-add_compile_options(-Werror -Wall -Wextra -Wimplicit-fallthrough)
+add_compile_options(-Werror -Wall -Wextra -Wimplicit-fallthrough -Wno-deprecated-declarations)
 
-add_link_options(-Wl,--max-memory=67108864)
+add_link_options(-Wl,--max-memory=268435456 -Wl,-z,stack-size=1048576)
 
 add_executable(python-host pyhost.c)
 

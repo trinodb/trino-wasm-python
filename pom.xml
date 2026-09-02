@@ -10,7 +10,7 @@
 
     <groupId>io.trino</groupId>
     <artifactId>trino-wasm-python</artifactId>
-    <version>3.13-8-SNAPSHOT</version>
+    <version>3.14-1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
@@ -67,6 +67,24 @@
         <dependency>
             <groupId>run.endive</groupId>
             <artifactId>wasm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>run.endive</groupId>
+            <artifactId>wasi</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -129,6 +147,7 @@
                         <configuration>
                             <name>io.trino.wasm.python.Python</name>
                             <wasmFile>${project.build.directory}/wasm/python-host-opt.wasm</wasmFile>
+                            <interpreterFallback>FAIL</interpreterFallback>
                         </configuration>
                     </execution>
                 </executions>

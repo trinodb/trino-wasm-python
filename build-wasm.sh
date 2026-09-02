@@ -16,16 +16,16 @@ export CMAKE_EXTRA_ARGS="
     -DCMAKE_TOOLCHAIN_FILE=${WASI_SDK_PATH}/share/cmake/wasi-sdk-p1.cmake
     -DCMAKE_PREFIX_PATH=/opt/wasi-python"
 
-cmake -B ${TARGET_DIR} ${CMAKE_EXTRA_ARGS} .
+cmake --fresh -B ${TARGET_DIR} ${CMAKE_EXTRA_ARGS} .
 cmake --build ${TARGET_DIR} --verbose
 
 rm -rf "${TARGET_DIR}"/python
 
-cp -a ${PYTHON_PATH}/lib/python3.13 ${TARGET_DIR}/python
+cp -a ${PYTHON_PATH}/lib/python3.14 ${TARGET_DIR}/python
 cp /work/trino.py ${TARGET_DIR}/python/site-packages/
 
 wasi-vfs pack ${TARGET_DIR}/python-host.wasm \
-    --dir ${TARGET_DIR}/python::/opt/wasi-python/lib/python3.13 \
+    --dir ${TARGET_DIR}/python::/opt/wasi-python/lib/python3.14 \
     --output ${TARGET_DIR}/python-host-packed.wasm
 
 rm -rf "${TARGET_DIR}"/empty

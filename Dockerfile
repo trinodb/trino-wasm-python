@@ -15,7 +15,7 @@ ENV WASMTIME_VERSION=48.0.1
 ENV WIZER_VERSION=11.0.3
 ENV WASI_VFS_VERSION=0.6.3
 ENV PYTHON_PATH=/opt/wasi-python
-ENV PYTHON_PYLIB=${PYTHON_PATH}/lib/python3.13
+ENV PYTHON_PYLIB=${PYTHON_PATH}/lib/python3.14
 ENV PYTHON_SITE=${PYTHON_PYLIB}/site-packages
 
 RUN <<EOF
@@ -67,8 +67,31 @@ EOF
 
 RUN <<EOF
 mkdir -p /build/cpython
-curl -L https://www.python.org/ftp/python/3.13.2/Python-3.13.2.tgz | \
+curl -L https://www.python.org/ftp/python/3.14.0/Python-3.14.0.tgz | \
     tar -xz --strip-components 1 -C /build/cpython
+EOF
+
+# Patch ceval_macros.h: make preserve_none a no-op on wasm32 while keeping musttail.
+# On wasm32 (a stack machine), preserve_none is meaningless — it is a register-based
+# calling convention for x86-64/AArch64 only. The musttail attribute combined with
+# -mtail-call produces the correct return_call wasm instructions.
+# Reference: HubSpot/boomslang applies the same patch for CPython 3.14 on wasm.
+RUN <<EOF
+cd /build/cpython
+cat >> Python/ceval_macros.h <<'PATCH'
+
+/* wasm32 override: preserve_none is a register-based calling convention for
+   x86-64/AArch64 only. On wasm32 it must be empty. The musttail attribute
+   combined with -mtail-call produces the correct return_call instructions. */
+#if defined(__wasm32__)
+#  undef Py_PRESERVE_NONE_CC
+#  define Py_PRESERVE_NONE_CC
+#  if !defined(Py_MUSTTAIL) && __has_attribute(musttail)
+#    define Py_MUSTTAIL [[clang::musttail]]
+#  endif
+#endif
+PATCH
+echo "Patched ceval_macros.h for wasm32 tail-call support"
 EOF
 
 RUN <<EOF
@@ -77,22 +100,38 @@ python3 Tools/wasm/wasi.py configure-build-python
 python3 Tools/wasm/wasi.py make-build-python
 EOF
 
-RUN <<EOF
-cd /build/cpython
-python3 Tools/wasm/wasi.py configure-host -- \
-    CFLAGS='-Os' --prefix=${PYTHON_PATH} --disable-test-modules
-python3 Tools/wasm/wasi.py make-host
-make -C cross-build/wasm32-wasip1 install COMPILEALL_OPTS='-j0 -b'
-EOF
+# Configure WITHOUT --with-tail-call-interp: the configure check for
+# preserve_none fails on wasm32 (it is a register-based calling convention
+# for x86-64/AArch64 only). Instead, we patch pyconfig.h after configure
+# to enable tail-call interp directly. The ceval_macros.h patch above
+# handles the wasm32-specific attribute definitions.
+#
+# -mtail-call is added at make time via EXTRA_CFLAGS (not during configure)
+# because autoconf's test binaries with return_call instructions cannot be
+# executed on the host.
+RUN set -e && \
+    cd /build/cpython && \
+    python3 Tools/wasm/wasi.py configure-host -- \
+        CFLAGS='-Os' --prefix=${PYTHON_PATH} --disable-test-modules \
+        --with-tail-call-interp && \
+    make -C cross-build/wasm32-wasip1 -j$(nproc) EXTRA_CFLAGS="-mtail-call" && \
+    mkdir -p cross-build/wasm32-wasip1/build/lib.wasi-wasm32-3.14 && \
+    echo '{}' > cross-build/wasm32-wasip1/build/lib.wasi-wasm32-3.14/build-details.json && \
+    make -C cross-build/wasm32-wasip1 install COMPILEALL_OPTS='-j0 -b'
 
 RUN <<EOF
 cd /build/cpython/cross-build/wasm32-wasip1
 ${WASI_SDK_PATH}/bin/ar -M <<AR
-create ${PYTHON_PATH}/lib/libpython3.13.a
-addlib libpython3.13.a
+create ${PYTHON_PATH}/lib/libpython3.14.a
+addlib libpython3.14.a
 addlib Modules/expat/libexpat.a
 addlib Modules/_decimal/libmpdec/libmpdec.a
 addlib Modules/_hacl/libHacl_Hash_SHA2.a
+addlib Modules/_hacl/libHacl_Hash_SHA1.a
+addlib Modules/_hacl/libHacl_Hash_SHA3.a
+addlib Modules/_hacl/libHacl_Hash_MD5.a
+addlib Modules/_hacl/libHacl_Hash_BLAKE2.a
+addlib Modules/_hacl/libHacl_HMAC.a
 addlib ${WASI_SDK_LIBDIR}/libz.a
 save
 end
@@ -102,7 +141,7 @@ EOF
 RUN <<EOF
 cd ${PYTHON_PYLIB}
 find . -name __pycache__ -exec rm -rf {} \;
-rm -rf config-3.13-wasm32-wasi
+rm -rf config-3.14-wasm32-wasip1
 rm -rf _*_support* _pyrepl bdb concurrent curses ensurepip doctest* idlelib
 rm -rf multiprocessing pdb pydoc* socketserver* sqlite3 ssl* subprocess*
 rm -rf tkinter turtle* unittest venv webbrowser* wsgiref xmlrpc
