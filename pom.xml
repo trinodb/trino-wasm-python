@@ -5,12 +5,12 @@
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
-        <version>356</version>
+        <version>406</version>
     </parent>
 
     <groupId>io.trino</groupId>
     <artifactId>trino-wasm-python</artifactId>
-    <version>3.13-8-SNAPSHOT</version>
+    <version>3.14-1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
@@ -43,7 +43,7 @@
         <air.javadoc.lint>all,-missing</air.javadoc.lint>
         <air.release.preparation-goals>clean verify -DskipTests</air.release.preparation-goals>
 
-        <dep.endive.version>1.0.0</dep.endive.version>
+        <dep.endive.version>1.0.1</dep.endive.version>
     </properties>
 
     <dependencyManagement>
@@ -68,6 +68,24 @@
             <groupId>run.endive</groupId>
             <artifactId>wasm</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>run.endive</groupId>
+            <artifactId>wasi</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -78,6 +96,17 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                         <failIfNoTests>false</failIfNoTests>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.gaul</groupId>
+                    <artifactId>modernizer-maven-plugin</artifactId>
+                    <configuration>
+                        <!-- generated code uses String.format -->
+                        <exclusionPatterns>
+                            <exclusionPattern>java/lang/String.format:.*</exclusionPattern>
+                        </exclusionPatterns>
                     </configuration>
                 </plugin>
             </plugins>
@@ -118,6 +147,7 @@
                         <configuration>
                             <name>io.trino.wasm.python.Python</name>
                             <wasmFile>${project.build.directory}/wasm/python-host-opt.wasm</wasmFile>
+                            <interpreterFallback>FAIL</interpreterFallback>
                         </configuration>
                     </execution>
                 </executions>
